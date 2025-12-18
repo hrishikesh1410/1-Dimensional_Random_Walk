@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>One-Dimensional Random Walks</title>
+
+<!-- MathJax (robust, safe) -->
+<script>
+window.MathJax = {
+  tex: {
+    inlineMath: [['$', '$'], ['\\(', '\\)']],
+    displayMath: [['$$', '$$']]
+  }
+};
+</script>
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+
+<!-- Plotly -->
+<script src="https://cdn.plot.ly/plotly-3.3.0.min.js"></script>
+
+<style>
+body {
+  font-family: Georgia, serif;
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
+button, input { margin: 4px; }
+.tab { display: none; }
+.tab.active { display: block; }
+
+#walker-container {
+  position: relative;
+  height: 80px;
+  border-bottom: 2px solid black;
+  margin: 20px 0;
+}
+#walker {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: crimson;
+  bottom: -8px;
+}
+
+.box {
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-top: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>One-Dimensional Random Walks</h1>
+<p><em>An interactive web paper</em></p>
+
+<button onclick="showTab('walk')">Animated Walk</button>
+<button onclick="showTab('dist')">PDF / CDF</button>
+<button onclick="showTab('paper')">Web Paper</button>
+
+<!-- ================= ANIMATED WALK ================= -->
+<div id="walk" class="tab active">
+
+<h2>Animated Random Walk (Single Path)</h2>
+
+<label>Total steps \(n\):</label>
+<input type="number" id="walkSteps" value="100" min="1">
+
+<label>Step probability \(p\):</label>
+<input type="number" id="probP" value="0.5" step="0.01" min="0" max="1">
+
+<label>Speed:</label>
+<input type="range" id="speedSlider" min="1" max="60" value="20">
+
+<div id="walker-container">
+  <div id="walker"></div>
+</div>
+
+<button onclick="startWalk()">Play</button>
+<button onclick="pauseWalk()">Pause</button>
+<button onclick="stepWalk()">Step</button>
+<button onclick="resetWalk()">Reset</button>
+
+<p>
+Step: <span id="stepNum">0</span> |
+Position: <span id="position">0</span> |
+Direction: <span id="direction">–</span>
+</p>
+
+<div class="box">
+<p>Path minimum: <span id="walkMin">0</span></p>
+<p>Path maximum: <span id="walkMax">0</span></p>
+</div>
+
+<div id="rangePlot"></div>
+
+</div>
+
+<!-- ================= DISTRIBUTIONS ================= -->
+<div id="dist" class="tab">
+
+<h2>PDF / CDF Convergence (CLT)</h2>
+
+<label>Simulations \(M\):</label>
+<input type="number" id="numWalks" value="1000">
+
+<label>Start \(n\):</label>
+<input type="number" id="nStart" value="20">
+
+<label>End \(n\):</label>
+<input type="number" id="nEnd" value="200">
+
+<label>\(\Delta n\):</label>
+<input type="number" id="nStep" value="20">
+
+<button onclick="animateConvergence()">Animate CLT</button>
+
+<div id="histogram"></div>
+<div id="cdfplot"></div>
+
+<div class="box">
+<p>Empirical mean: <span id="empMean"></span></p>
+<p>Empirical variance: <span id="empVar"></span></p>
+<p>Theoretical variance: <span id="theoVar"></span></p>
+</div>
+
+</div>
+
+<!-- ========================================================= -->
+<!-- =================== WEB PAPER =========================== -->
+<!-- ========================================================= -->
+<div id="paper" class="tab">
+
+<h2>Abstract</h2>
+
+<p>
+Random walks are among the most fundamental stochastic processes, forming
+the discrete backbone of modern probability theory and statistical physics.
+This web paper presents an interactive, simulation-based study of
+one-dimensional random walks.
+Through single-path animations and large-scale Monte Carlo experiments,
+we illustrate classical limit theorems, distributional convergence,
+pathwise scaling laws, and qualitative differences between symmetric and
+biased walks.
+</p>
+
+<hr>
+
+<h2>1. The Random Walk Model</h2>
+
+<p>
+Let \( (\xi_k)_{k \ge 1} \) be a sequence of independent and identically
+distributed random variables taking values in \( \{+1, -1\} \).
+We define a one-dimensional discrete-time random walk
+\( (X_n)_{n \ge 0} \) by
+</p>
+
+$$
+X_0 = 0, \qquad
+X_n = \sum_{k=1}^{n} \xi_k .
+$$
+
+<p>
+The parameter
+</p>
+
+$$
+\mathbb{P}(\xi_k = +1) = p, \qquad
+\mathbb{P}(\xi_k = -1) = 1 - p
+$$
+
+<p>
+controls the bias of the walk.
+The case \( p = \tfrac12 \) is called the <em>symmetric random walk</em>,
+while \( p \neq \tfrac12 \) produces a <em>biased</em> walk with drift.
+</p>
+
+<p>
+The random walk has <strong>independent increments</strong> and is
+a Markov process: the future evolution depends only on the current position.
+</p>
+
+<hr>
+
+<h2>2. Expectation and Variance</h2>
+
+<p>
+The expectation and variance of a single increment are
+</p>
+
+$$
+\mathbb{E}[\xi_k] = 2p - 1,
+\qquad
+\mathrm{Var}(\xi_k) = 4p(1-p).
+$$
+
+<p>
+Using linearity of expectation and independence, we obtain
+</p>
+
+$$
+\mathbb{E}[X_n] = n(2p - 1),
+\qquad
+\mathrm{Var}(X_n) = 4np(1-p).
+$$
+
+<p>
+Thus:
+</p>
+
+<ul>
+  <li>If \( p = \tfrac12 \), then \( \mathbb{E}[X_n] = 0 \) (no drift).</li>
+  <li>If \( p \neq \tfrac12 \), the walk has linear drift.</li>
+</ul>
+
+<hr>
+
+<h2>3. Law of Large Numbers (Drift)</h2>
+
+<p>
+By the Strong Law of Large Numbers,
+</p>
+
+$$
+\frac{X_n}{n} \xrightarrow{\text{a.s.}} 2p - 1 .
+$$
+
+<p>
+This means that for large \( n \), the random walk behaves approximately
+like a straight line with slope \( 2p - 1 \).
+</p>
+
+<p>
+In the symmetric case \( p = \tfrac12 \), the average displacement per step
+converges to zero, even though the walk continues to fluctuate.
+</p>
+
+<p>
+The animated single-path visualization on the first tab illustrates
+this phenomenon directly.
+</p>
+
+<hr>
+
+<h2>4. Central Limit Theorem</h2>
+
+<p>
+While the Law of Large Numbers describes the average behavior,
+it does not capture fluctuations.
+The Central Limit Theorem (CLT) describes these fluctuations:
+</p>
+
+$$
+\frac{X_n - \mathbb{E}[X_n]}{\sqrt{n}}
+\;\Rightarrow\;
+\mathcal{N}(0,\, 4p(1-p)).
+$$
+
+<p>
+Equivalently, for large \( n \),
+</p>
+
+$$
+X_n \approx \mathcal{N}\!\big( n(2p-1), \; 4np(1-p) \big).
+$$
+
+<p>
+In the PDF/CDF tab, we empirically demonstrate this result by simulating
+many independent walks and observing convergence of the histogram and
+empirical distribution function to the Gaussian prediction.
+</p>
+
+<hr>
+
+<h2>5. Distribution vs Pathwise Behavior</h2>
+
+<p>
+It is important to distinguish two viewpoints:
+</p>
+
+<ul>
+  <li>
+    <strong>Distributional:</strong> the law of \( X_n \) across many
+    independent realizations (studied via PDF and CDF).
+  </li>
+  <li>
+    <strong>Pathwise:</strong> the evolution of a single trajectory
+    \( (X_k)_{k \le n} \).
+  </li>
+</ul>
+
+<p>
+The CLT concerns distributional convergence,
+whereas many geometric properties of the walk (such as the range)
+are pathwise quantities.
+</p>
+
+<hr>
+
+<h2>6. Scaling of the Range</h2>
+
+<p>
+Define the range of the walk up to time \( n \) by
+</p>
+
+$$
+R_n = \max_{k \le n} X_k - \min_{k \le n} X_k .
+$$
+
+<p>
+For the symmetric walk, typical fluctuations of \( X_n \) are of order
+\( \sqrt{n} \).
+Consequently,
+</p>
+
+$$
+R_n \sim O(\sqrt{n}) .
+$$
+
+<p>
+The range plot in the animated walk tab visually confirms this scaling
+by comparing the empirical range with a reference \( \sqrt{n} \) curve.
+</p>
+
+<hr>
+
+<h2>7. Donsker’s Invariance Principle</h2>
+
+<p>
+Define the rescaled continuous-time process
+</p>
+
+$$
+W_n(t) = \frac{1}{\sqrt{n}} X_{\lfloor nt \rfloor},
+\qquad t \in [0,1].
+$$
+
+<p>
+Donsker’s invariance principle (functional CLT) states that
+</p>
+
+$$
+W_n \Rightarrow B(t),
+$$
+
+<p>
+where \( B(t) \) is standard Brownian motion.
+</p>
+
+<p>
+Thus, the random walk is a discrete approximation of Brownian motion,
+and many of its scaling properties originate from this limiting object.
+</p>
+
+<hr>
+
+<h2>8. Recurrence and Transience</h2>
+
+<p>
+A striking qualitative property of one-dimensional random walks is
+<em>recurrence</em>.
+</p>
+
+<p>
+For the symmetric case \( p = \tfrac12 \),
+</p>
+
+$$
+\mathbb{P}\big( X_n = 0 \text{ infinitely often} \big) = 1 .
+$$
+
+<p>
+That is, the walk returns to the origin infinitely many times almost surely.
+In contrast, for any biased walk \( p \neq \tfrac12 \),
+the walk is <em>transient</em> and eventually escapes to \( +\infty \)
+or \( -\infty \).
+</p>
+
+<hr>
+
+<h2>9. Interpretation and Outlook</h2>
+
+<p>
+This interactive web paper demonstrates how fundamental probabilistic
+theorems emerge from simple discrete models.
+Random walks serve as the foundation for
+diffusion processes, stochastic differential equations,
+financial models, and statistical physics.
+</p>
+
+<p>
+Possible extensions include first-passage times,
+hitting probabilities, multidimensional walks,
+and direct comparison with simulated Brownian motion.
+</p>
+
+</div>
+
+<script>
+/* ========== TAB CONTROL ========== */
+function showTab(id){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+/* ========== DOM REFERENCES ========== */
+const walker = document.getElementById("walker");
+const container = document.getElementById("walker-container");
+
+const stepNumSpan  = document.getElementById("stepNum");
+const positionSpan = document.getElementById("position");
+const directionSpan= document.getElementById("direction");
+const walkMinSpan  = document.getElementById("walkMin");
+const walkMaxSpan  = document.getElementById("walkMax");
+
+/* ========== WALK STATE ========== */
+let position = 0;
+let step = 0;
+let walkMin = 0;
+let walkMax = 0;
+let interval = null;
+
+let stepData = [];
+let rangeData = [];
+
+const origin = container.offsetWidth / 2;
+
+/* ========== WALK FUNCTIONS ========== */
+function stepWalk(){
+  const maxSteps = parseInt(walkSteps.value);
+  const p = parseFloat(probP.value);
+
+  if(step >= maxSteps){
+    pauseWalk();
+    return;
+  }
+
+  const dir = Math.random() < p ? 1 : -1;
+  position += dir;
+  step++;
+
+  walkMin = Math.min(walkMin, position);
+  walkMax = Math.max(walkMax, position);
+
+  walker.style.left = (origin + position * 10) + "px";
+
+  stepNumSpan.innerText = step;
+  positionSpan.innerText = position;
+  directionSpan.innerText = dir > 0 ? "Right" : "Left";
+  walkMinSpan.innerText = walkMin;
+  walkMaxSpan.innerText = walkMax;
+
+  stepData.push(step);
+  rangeData.push(walkMax - walkMin);
+  plotRange();
+}
+
+function startWalk(){
+  if(interval) return;
+
+  if(!walkSteps.value || walkSteps.value <= 0){
+    alert("Enter number of steps n");
+    return;
+  }
+
+  const speed = parseInt(speedSlider.value);
+  interval = setInterval(stepWalk, 1000 / speed);
+}
+
+function pauseWalk(){
+  clearInterval(interval);
+  interval = null;
+}
+
+function resetWalk(){
+  pauseWalk();
+  position = step = walkMin = walkMax = 0;
+  stepData = [];
+  rangeData = [];
+
+  walker.style.left = origin + "px";
+
+  stepNumSpan.innerText = 0;
+  positionSpan.innerText = 0;
+  directionSpan.innerText = "–";
+  walkMinSpan.innerText = 0;
+  walkMaxSpan.innerText = 0;
+
+  Plotly.purge("rangePlot");
+}
+
+/* ========== RANGE PLOT ========== */
+function plotRange(){
+  Plotly.newPlot("rangePlot",[
+    {x:stepData, y:rangeData, mode:"lines", name:"Range"},
+    {x:stepData, y:stepData.map(n=>Math.sqrt(n)),
+     mode:"lines", line:{dash:"dash"}, name:"√n"}
+  ],{
+    title:"Range growth Rₙ ~ O(√n)",
+    xaxis:{title:"n"},
+    yaxis:{title:"Range"}
+  });
+}
+
+/* ========== DISTRIBUTIONS ========== */
+async function animateConvergence(){
+  const M = parseInt(numWalks.value);
+  const p = parseFloat(probP.value);
+
+  for(let n=parseInt(nStart.value); n<=parseInt(nEnd.value); n+=parseInt(nStep.value)){
+    simulate(M,n,p);
+    await new Promise(r=>setTimeout(r,700));
+  }
+}
+
+function simulate(M,N,p){
+  let data=[];
+  for(let i=0;i<M;i++){
+    let x=0;
+    for(let j=0;j<N;j++) x+=Math.random()<p?1:-1;
+    data.push(x);
+  }
+
+  const mean=data.reduce((a,b)=>a+b,0)/M;
+  const variance=data.reduce((a,b)=>a+(b-mean)**2,0)/M;
+
+  empMean.innerText=mean.toFixed(3);
+  empVar.innerText=variance.toFixed(3);
+  theoVar.innerText=N.toFixed(1);
+
+  const xs=Array.from({length:200},(_,i)=>-4*Math.sqrt(N)+i*(8*Math.sqrt(N)/199));
+  const pdf=xs.map(x=>Math.exp(-x*x/(2*N))/Math.sqrt(2*Math.PI*N));
+
+  Plotly.newPlot("histogram",[
+    {x:data,type:"histogram",histnorm:"probability density"},
+    {x:xs,y:pdf,mode:"lines"}
+  ],{title:`PDF of Xₙ (n=${N})`});
+
+  data.sort((a,b)=>a-b);
+  const cdf=data.map((_,i)=>(i+1)/M);
+  const normcdf=xs.map(x=>0.5*(1+Math.erf(x/Math.sqrt(2*N))));
+
+  Plotly.newPlot("cdfplot",[
+    {x:data,y:cdf,mode:"lines",line:{shape:"hv"}},
+    {x:xs,y:normcdf,mode:"lines"}
+  ],{title:"CDF comparison"});
+}
+</script>
+
+</body>
+</html>
