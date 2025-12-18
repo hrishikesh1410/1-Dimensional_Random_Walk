@@ -1,5 +1,6 @@
 1-Dimensional_Random_Walk
 Project: Interactive Study of One-Dimensional Random Walks 
+
 Overview
 
 This project is a browser-based interactive study of one-dimensional random walks, combining simulation, animation, and rigorous explanation. It is designed to connect theoretical ideas from probability with computational experiments and visualization.
