@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>One-Dimensional Random Walks</title>
 
+
+
 <!-- MathJax (robust, safe) -->
 <script>
 window.MathJax = {
@@ -19,20 +21,84 @@ window.MathJax = {
 <script src="https://cdn.plot.ly/plotly-3.3.0.min.js"></script>
 
 <style>
-body {
-  font-family: Georgia, serif;
-  max-width: 1100px;
-  margin: auto;
-  padding: 20px;
+:root {
+  --navy:#1a2744;
+  --gold:#c9a84c;
+  --bg:#fafaf8;
 }
-button, input { margin: 4px; }
-.tab { display: none; }
-.tab.active { display: block; }
 
+body {
+  font-family: 'Inter', system-ui;
+  background: var(--bg);
+  color:#222;
+  margin:0;
+  line-height:1.6;
+}
+
+/* HEADER */
+.header {
+  background: var(--navy);
+  color:white;
+  padding:40px 20px;
+  text-align:center;
+}
+
+.header h1 {
+  margin:0;
+  font-size:2.5rem;
+}
+
+.header p {
+  opacity:0.7;
+}
+
+/* NAV */
+.nav {
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  padding:15px;
+  background:white;
+  border-bottom:1px solid #ddd;
+}
+
+.nav button {
+  background:none;
+  border:1px solid #ddd;
+  padding:8px 14px;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.nav button:hover {
+  background:var(--navy);
+  color:white;
+}
+
+/* TABS */
+.tab { display:none; }
+.tab.active { display:block; }
+
+/* PANELS */
+.section {
+  max-width:1100px;
+  margin:40px auto;
+  padding:0 20px;
+}
+
+.card {
+  background:white;
+  border-radius:14px;
+  padding:20px;
+  box-shadow:0 6px 30px rgba(0,0,0,0.08);
+  margin-bottom:20px;
+}
+
+/* WALK */
 #walker-container {
   position: relative;
   height: 80px;
-  border-bottom: 2px solid black;
+  border-bottom: 2px solid var(--navy);
   margin: 20px 0;
 }
 #walker {
@@ -43,25 +109,86 @@ button, input { margin: 4px; }
   bottom: -8px;
 }
 
+/* BOX */
 .box {
-  border: 1px solid #ccc;
-  padding: 10px;
-  margin-top: 10px;
+  background:#f5e9c8;
+  padding:10px;
+  border-radius:8px;
+  margin-top:10px;
+}
+
+/* ABOUT */
+.about {
+  background: var(--navy);
+  color:white;
+  padding:40px 20px;
+  text-align:center;
+}
+
+.about a {
+  color:var(--gold);
+  text-decoration:none;
+}
+
+#trail {
+  position:absolute;
+  bottom:-4px;
+  height:4px;
+  width:100%;
+}
+
+.trail-dot {
+  position:absolute;
+  width:6px;
+  height:6px;
+  background:rgba(200,0,0,0.5);
+  border-radius:50%;
+  transform:translateX(-50%);
+}
+
+.theorem {
+  cursor:pointer;
+  padding:10px;
+  border-left:4px solid var(--gold);
+  background:#f5e9c8;
+  margin:10px 0;
+  border-radius:6px;
+}
+
+.theorem-content {
+  display:none;
+  padding:10px;
+  background:white;
+  border:1px solid #ddd;
+  border-radius:6px;
+  margin-bottom:10px;
 }
 </style>
+
 </head>
 
 <body>
 
-<h1>One-Dimensional Random Walks</h1>
-<p><em>An interactive web paper</em></p>
+<div class="header">
+  <h1>One-Dimensional Random Walks</h1>
+<p style="text-align:center; opacity:0.6;">
+From discrete randomness to continuous limits
+</p>
+  <p>An Interactive Web Paper</p>
+</div>
 
-<button onclick="showTab('walk')">Animated Walk</button>
-<button onclick="showTab('dist')">PDF / CDF</button>
-<button onclick="showTab('paper')">Web Paper</button>
 
+<div class="nav">
+  <button onclick="showTab('walk')">Animated Walk</button>
+  <button onclick="showTab('dist')">PDF / CDF</button>
+  <button onclick="showTab('paper')">Web Paper</button>
+</div>
 <!-- ================= ANIMATED WALK ================= -->
-<div id="walk" class="tab active">
+
+<div class="section">
+  <div class="card">
+
+	<div id="walk" class="tab active">
 
 <h2>Animated Random Walk (Single Path)</h2>
 
@@ -73,8 +200,9 @@ button, input { margin: 4px; }
 
 <label>Speed:</label>
 <input type="range" id="speedSlider" min="1" max="60" value="20">
-
+ 
 <div id="walker-container">
+  <div id="trail"></div>
   <div id="walker"></div>
 </div>
 
@@ -98,8 +226,16 @@ Direction: <span id="direction">–</span>
 
 </div>
 
+
+
+  </div>
+</div>
+
 <!-- ================= DISTRIBUTIONS ================= -->
-<div id="dist" class="tab">
+
+<div class="section">
+  <div class="card">
+     <div id="dist" class="tab">
 
 <h2>PDF / CDF Convergence (CLT)</h2>
 
@@ -128,10 +264,16 @@ Direction: <span id="direction">–</span>
 
 </div>
 
+  </div>
+</div>
+
 <!-- ========================================================= -->
 <!-- =================== WEB PAPER =========================== -->
 <!-- ========================================================= -->
-<div id="paper" class="tab">
+
+<div class="section">
+  <div class="card">
+    <div id="paper" class="tab">
 
 <h2>Abstract</h2>
 
@@ -215,64 +357,37 @@ Thus:
   <li>If \( p \neq \tfrac12 \), the walk has linear drift.</li>
 </ul>
 
-<hr>
+<div class="theorem" onclick="toggleTheory('lln-exp')">
+  📌 Law of Large Numbers (click to expand)
+</div>
 
-<h2>3. Law of Large Numbers (Drift)</h2>
+<div id="lln-exp" class="theorem-content">
+  $$ \frac{X_n}{n} \to 2p - 1 $$
 
-<p>
-By the Strong Law of Large Numbers,
-</p>
+  <p>
+  This means that over time, the average step converges to the expected drift.
+  </p>
 
-$$
-\frac{X_n}{n} \xrightarrow{\text{a.s.}} 2p - 1 .
-$$
+  <p>
+  💡 Intuition: randomness cancels out, leaving only the average tendency.
+  </p>
+</div>
 
-<p>
-This means that for large \( n \), the random walk behaves approximately
-like a straight line with slope \( 2p - 1 \).
-</p>
+<div class="theorem" onclick="toggleTheory('clt-exp')">
+  📊 Central Limit Theorem (click to expand)
+</div>
 
-<p>
-In the symmetric case \( p = \tfrac12 \), the average displacement per step
-converges to zero, even though the walk continues to fluctuate.
-</p>
+<div id="clt-exp" class="theorem-content">
+  $$ \frac{X_n - \mathbb{E}[X_n]}{\sqrt{n}} \Rightarrow \mathcal{N}(0, 4p(1-p)) $$
 
-<p>
-The animated single-path visualization on the first tab illustrates
-this phenomenon directly.
-</p>
+  <p>
+  As n increases, distribution becomes normal.
+  </p>
 
-<hr>
-
-<h2>4. Central Limit Theorem</h2>
-
-<p>
-While the Law of Large Numbers describes the average behavior,
-it does not capture fluctuations.
-The Central Limit Theorem (CLT) describes these fluctuations:
-</p>
-
-$$
-\frac{X_n - \mathbb{E}[X_n]}{\sqrt{n}}
-\;\Rightarrow\;
-\mathcal{N}(0,\, 4p(1-p)).
-$$
-
-<p>
-Equivalently, for large \( n \),
-</p>
-
-$$
-X_n \approx \mathcal{N}\!\big( n(2p-1), \; 4np(1-p) \big).
-$$
-
-<p>
-In the PDF/CDF tab, we empirically demonstrate this result by simulating
-many independent walks and observing convergence of the histogram and
-empirical distribution function to the Gaussian prediction.
-</p>
-
-<hr>
+  <p>
+  💡 Intuition: many small random steps → bell curve.
+  </p>
+</div>
 
 <h2>5. Distribution vs Pathwise Behavior</h2>
 
@@ -397,8 +512,17 @@ and direct comparison with simulated Brownian motion.
 </p>
 
 </div>
+  </div>
+</div>
 
 <script>
+
+function toggleTheory(id){
+  const el = document.getElementById(id);
+  el.style.display = el.style.display === "block" ? "none" : "block";
+}
+let trailPoints = [];
+
 /* ========== TAB CONTROL ========== */
 function showTab(id){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -437,9 +561,32 @@ function stepWalk(){
     return;
   }
 
+
+
   const dir = Math.random() < p ? 1 : -1;
   position += dir;
   step++;
+
+// Add trail point
+trailPoints.push(position);
+
+// Limit trail length
+if(trailPoints.length > 200) trailPoints.shift();
+
+// Render trail
+const trailDiv = document.getElementById("trail");
+trailDiv.innerHTML = "";
+
+trailPoints.forEach((p, i) => {
+  const dot = document.createElement("div");
+  dot.className = "trail-dot";
+
+  const opacity = i / trailPoints.length;
+  dot.style.opacity = opacity;
+
+  dot.style.left = (origin + p * 10) + "px";
+  trailDiv.appendChild(dot);
+});
 
   walkMin = Math.min(walkMin, position);
   walkMax = Math.max(walkMax, position);
@@ -480,6 +627,10 @@ function resetWalk(){
   stepData = [];
   rangeData = [];
 
+  // ===== TRAIL RESET =====
+  trailPoints = [];
+  document.getElementById("trail").innerHTML = "";
+
   walker.style.left = origin + "px";
 
   stepNumSpan.innerText = 0;
@@ -490,7 +641,6 @@ function resetWalk(){
 
   Plotly.purge("rangePlot");
 }
-
 /* ========== RANGE PLOT ========== */
 function plotRange(){
   Plotly.newPlot("rangePlot",[
@@ -548,6 +698,24 @@ function simulate(M,N,p){
   ],{title:"CDF comparison"});
 }
 </script>
+
+<div class="about">
+  <h2>About This Project</h2>
+  <p>
+    This interactive web paper explores one-dimensional random walks through
+    simulation and visualization, illustrating key results such as the
+    Central Limit Theorem, scaling laws, and stochastic behavior.
+  </p>
+
+  <p><strong>Hrishikesh Desai</strong></p>
+  <p>IISER Tirupati</p>
+
+  <p>
+    <a href="https://github.com/hrishikesh1410" target="_blank">
+      View on GitHub ↗
+    </a>
+  </p>
+</div>
 
 </body>
 </html>
